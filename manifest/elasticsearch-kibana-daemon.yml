@@ -1,0 +1,185 @@
+kind: Namespace
+apiVersion: v1
+metadata:
+  name: event-logging
+  labels:
+    name: event-logging
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: event-exporter-sa
+  namespace: event-logging
+  labels:
+    k8s-app: event-exporter
+    kubernetes.io/cluster-service: "true"
+    addonmanager.kubernetes.io/mode: Reconcile
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: event-exporter-rb
+  namespace: event-logging
+  labels:
+    k8s-app: event-exporter
+    kubernetes.io/cluster-service: "true"
+    addonmanager.kubernetes.io/mode: Reconcile
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: view
+subjects:
+- kind: ServiceAccount
+  name: event-exporter-sa
+  namespace: event-logging
+---
+apiVersion: apps/v1beta1
+kind: Deployment
+metadata:
+  name: kibana
+  labels:
+    app: kibana
+  namespace: event-logging
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+     app: kibana
+  template:
+    metadata:
+      labels:
+        app: kibana
+    spec:
+      containers:
+      - name: kibana
+        image: kibana:5.6.5
+        env:
+        - name: ELASTICSEARCH_URL
+          value: 'http://elasticsearch:9200'
+        ports:
+        - containerPort: 5601
+          name: http
+---
+apiVersion: extensions/v1beta1
+kind: Ingress
+metadata:
+  labels:
+    app: kibana
+    chart: kibana-0.2.0
+    heritage: Tiller
+    release: event-logging
+    traefik/balancer-name: internal
+  name: elasticsearch-kibana
+  namespace: event-logging
+  annotations:
+    external-dns.alpha.kubernetes.io/hostname: kibana.kube.dev.pxfd.tech
+    external-dns.alpha.kubernetes.io/target: traefik-internal.kube.dev.pxfd.tech
+    kubernetes.io/ingress.class: traefik
+spec:
+  rules:
+    - host: events-kibana.kube.dev.pxfd.tech
+      http:
+        paths:
+          - path: /
+            backend:
+              serviceName: kibana
+              servicePort: 5601
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: kibana
+  labels:
+    app: kibana
+  namespace: event-logging
+spec:
+  type: NodePort
+  selector:
+    app: kibana
+  ports:
+  - name: http
+    port: 5601
+    targetPort: 5601
+    nodePort: 30601
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: elasticsearch
+  labels:
+    app: elasticsearch
+  namespace: event-logging
+spec:
+  selector:
+    app: elasticsearch
+  ports:
+  - name: http
+    port: 9200
+    protocol: TCP
+    targetPort: 9200
+  - name: transport
+    port: 9300
+    protocol: TCP
+    targetPort: 9300
+---
+apiVersion: apps/v1beta1
+kind: Deployment
+metadata:
+  name: elasticsearch
+  labels:
+    app: elasticsearch
+  namespace: event-logging
+spec:
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: elasticsearch
+    spec:
+      containers:
+      - name: elasticsearch
+        image: elasticsearch:5.6.5-alpine
+        env:
+        - name: ES_JAVA_OPTS
+          value: -Xms512m -Xmx512m
+        ports:
+        - containerPort: 9300
+          name: transport
+        - containerPort: 9200
+          name: http
+        volumeMounts:
+        - name: data
+          mountPath: /usr/share/elasticsearch/data
+      volumes:
+          - emptyDir:
+              medium: ""
+            name: data
+---
+apiVersion: extensions/v1beta1
+kind: DaemonSet
+metadata:
+  name: event-exporter
+  namespace: event-logging
+  labels:
+    run: event-exporter
+spec:
+  selector:
+    matchLabels:
+      run: event-exporter
+  template:
+    metadata:
+      labels:
+        run: event-exporter
+    spec:
+      serviceAccountName: event-exporter-sa
+      containers:
+      - image: liubin/event-exporter
+        ports:
+        - containerPort: 80
+        imagePullPolicy: Always
+        name: event-exporter
+        command: ["/event-exporter"]
+        args: ["-v", "4"]
+      dnsPolicy: ClusterFirst
+      restartPolicy: Always
+      terminationGracePeriodSeconds: 30
