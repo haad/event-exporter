@@ -17,10 +17,13 @@ limitations under the License.
 package sinks
 
 import (
-	"github.com/golang/glog"
-	"gopkg.in/olivere/elastic.v3"
-	api_v1 "k8s.io/api/core/v1"
+	"context"
+	"fmt"
 	"time"
+
+	"github.com/golang/glog"
+	elastic "gopkg.in/olivere/elastic.v6"
+	api_v1 "k8s.io/api/core/v1"
 )
 
 type ElasticSearchConf struct {
@@ -33,6 +36,7 @@ type ElasticSearchConf struct {
 type ElasticSearchSink struct {
 	config          *ElasticSearchConf
 	esClient        *elastic.Client
+	ctx             context.Context
 	beforeFirstList bool
 	currentBuffer   []*api_v1.Event
 	logEntryChannel chan *api_v1.Event
@@ -63,10 +67,13 @@ func NewElasticSearchSink(config *ElasticSearchConf) (*ElasticSearchSink, error)
 		return nil, err
 	}
 
+	ctx := context.Background()
+
 	glog.Infof("NewElasticSearchOut inited.")
 
 	return &ElasticSearchSink{
 		esClient:           esClient,
+		ctx:                ctx,
 		beforeFirstList:    true,
 		logEntryChannel:    make(chan *api_v1.Event, config.MaxBufferSize),
 		config:             config,
@@ -157,7 +164,7 @@ func (es *ElasticSearchSink) sendEntries(entries []*api_v1.Event) {
 		bulkRequest = bulkRequest.Add(newIndex)
 	}
 
-	_, err := bulkRequest.Do()
+	_, err := bulkRequest.Do(es.ctx)
 	if err != nil {
 		glog.Errorf("save events error: %v", err)
 	}

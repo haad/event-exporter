@@ -30,8 +30,8 @@
   name = "github.com/golang/glog"
 
 [[constraint]]
-  name = "gopkg.in/olivere/elastic.v3"
-  version = "3.0.73"
+  name = "gopkg.in/olivere/elastic.v6"
+  version = "6.2.16"
 
 [[constraint]]
   name = "k8s.io/api"
