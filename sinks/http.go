@@ -21,11 +21,12 @@ import (
 	"compress/zlib"
 	"encoding/json"
 	"fmt"
-	"github.com/golang/glog"
 	"io"
-	api_v1 "k8s.io/api/core/v1"
 	"net/http"
 	"time"
+
+	"github.com/golang/glog"
+	api_v1 "k8s.io/api/core/v1"
 )
 
 const (
@@ -210,7 +211,7 @@ func setHeaders(req *http.Request, config *HTTPConf) error {
 		return fmt.Errorf("Auth method error: %s not supported yet", *config.Auth)
 	}
 
-	req.Header.Set("Context-Type", "application/json")
+	req.Header.Set("Content-Type", "application/json")
 	req.Header.Set("User-Agent", "alauda/event-exporter/1.0")
 
 	return nil
