@@ -33,6 +33,7 @@ import (
 	"k8s.io/client-go/rest"
 
 	"github.com/haad/event-exporter/sinks"
+	// "event-exporter/sinks"
 )
 
 const (
@@ -45,15 +46,16 @@ var (
 	resyncPeriod       = flag.Duration("resync-period", 1*time.Minute, "Reflector resync period")
 	prometheusEndpoint = flag.String("prometheus-endpoint", ":80", "Endpoint on which to "+
 		"expose Prometheus http handler")
-	sinkName              = flag.String("sink", sinkNameElasticSearch, "Sink type to save the exported events: elasticsearch/kafka/http")
-	elasticsearchEndpoint = flag.String("elasticsearch-server", "http://logging-esk-elasticsearch-client.logging:9200/", "Elasticsearch endpoint")
+	sinkName                 = flag.String("sink", sinkNameElasticSearch, "Sink type to save the exported events: elasticsearch/kafka/http")
+	elasticsearchEndpoint    = flag.String("elasticsearch-server", "http://logging-esk-elasticsearch-client.logging:9200/", "Elasticsearch endpoint")
+	elasticsearchIndexPrefix = flag.String("index-prefix", "events", "Elasticsearch index prefix")
 
 	// for http sink
 	httpEndpoint = flag.String("http-endpoint", "", "Http endpoint")
 	httpAuth     = flag.String("auth", "token", "Http auth method: basic or token")
 	httpToken    = flag.String("token", "", "Token header and value for http token auth")
 	httpUsername = flag.String("username", "", "Username for http basic auth")
-	httpPassword = flag.String("password", "", "Nassword for http basic auth")
+	httpPassword = flag.String("password", "", "Password for http basic auth")
 )
 
 func newSystemStopChannel() chan struct{} {
@@ -90,6 +92,7 @@ func main() {
 	if *sinkName == sinkNameElasticSearch {
 		config := sinks.DefaultElasticSearchConf()
 		config.Endpoint = *elasticsearchEndpoint
+		config.IndexPrefix = *elasticsearchIndexPrefix
 		outSink, err = sinks.NewElasticSearchSink(config)
 		if err != nil {
 			glog.Fatalf("Failed to initialize elasticsearch output: %v", err)

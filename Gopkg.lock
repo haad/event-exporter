@@ -99,12 +99,44 @@
   version = "1.0"
 
 [[projects]]
+  branch = "master"
+  digest = "1:5bf23f15fd4550fa19e9fbc8e9fd2e254444a01f4644ad835b5389d1f7d91077"
+  name = "github.com/mailru/easyjson"
+  packages = [
+    ".",
+    "buffer",
+    "jlexer",
+    "jwriter",
+  ]
+  pruneopts = "UT"
+  revision = "6243d8e04c3f819e79757e8bc3faa15c3cb27003"
+
+[[projects]]
   digest = "1:ff5ebae34cfbf047d505ee150de27e60570e8c394b3b8fdbb720ff6ac71985fc"
   name = "github.com/matttproud/golang_protobuf_extensions"
   packages = ["pbutil"]
   pruneopts = "UT"
   revision = "c12348ce28de40eed0136aa2b644d0ee0650e56c"
   version = "v1.0.1"
+
+[[projects]]
+  digest = "1:51f610491a1d9df09b62887d409e0f79825f33e57a571d258ec908f679c8a2c3"
+  name = "github.com/olivere/elastic"
+  packages = [
+    "config",
+    "uritemplates",
+  ]
+  pruneopts = "UT"
+  revision = "407a1d940dcc89e279c579eb393d0bdde8fd9ac4"
+  version = "v6.2.16"
+
+[[projects]]
+  digest = "1:cf31692c14422fa27c83a05292eb5cbe0fb2775972e8f1f8446a71549bd8980b"
+  name = "github.com/pkg/errors"
+  packages = ["."]
+  pruneopts = "UT"
+  revision = "ba968bfe8b2f7e042a574c888954fccecfa385b4"
+  version = "v0.8.1"
 
 [[projects]]
   digest = "1:8741a83ce2890884db75c6f9a76a4d0a258793591fbebf2ad7d73f0654661c97"
@@ -197,16 +229,12 @@
   version = "v0.9.0"
 
 [[projects]]
-  digest = "1:68a28318c83c7147e9636e9e8ac876152a7fdd90fff72c25e7816d21db659769"
-  name = "gopkg.in/olivere/elastic.v3"
-  packages = [
-    ".",
-    "backoff",
-    "uritemplates",
-  ]
+  digest = "1:8ba4fd53e3fc457baa11583d02e1990a389ff85f7b5061c70c6f95bc382e565c"
+  name = "gopkg.in/olivere/elastic.v6"
+  packages = ["."]
   pruneopts = "UT"
-  revision = "defe35fda8067a90957799162db966f5ea54342e"
-  version = "v3.0.73"
+  revision = "407a1d940dcc89e279c579eb393d0bdde8fd9ac4"
+  version = "v6.2.16"
 
 [[projects]]
   digest = "1:73e6fda93622790d2371344759df06ff5ff2fac64a6b6e8832b792e7402956e7"
@@ -360,7 +388,7 @@
     "github.com/golang/glog",
     "github.com/prometheus/client_golang/prometheus",
     "github.com/prometheus/client_golang/prometheus/promhttp",
-    "gopkg.in/olivere/elastic.v3",
+    "gopkg.in/olivere/elastic.v6",
     "k8s.io/api/core/v1",
     "k8s.io/apimachinery/pkg/apis/meta/v1",
     "k8s.io/apimachinery/pkg/runtime",
