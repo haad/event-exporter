@@ -59,7 +59,7 @@ const (
 	defaultMaxBufferSize  = 1000
 	defaultMaxConcurrency = 1
 
-	eventsLogName = "logs"
+	eventsLogName = "_doc"
 )
 
 type Sink interface {
