@@ -155,7 +155,7 @@ func (es *ElasticSearchSink) flushBuffer() {
 	go es.sendEntries(entries)
 }
 func (es *ElasticSearchSink) sendEntries(entries []*api_v1.Event) {
-	indexName := fmt.Sprintf("%s-%s", es.config.IndexPrefix, time.Now().Format("2006.01.02"))
+	indexName := fmt.Sprintf("%s", es.config.IndexPrefix)
 
 	glog.V(4).Infof("Sending %d entries to Elasticsearch(%s)", len(entries), indexName)
 
