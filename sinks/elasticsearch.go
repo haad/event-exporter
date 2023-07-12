@@ -105,7 +105,7 @@ func (es *ElasticSearchSink) OnUpdate(oldEvent *api_v1.Event, newEvent *api_v1.E
 		glog.V(2).Infof("Event count has increased by %d != 1.\n"+
 			"\tOld event: %+v\n\tNew event: %+v", newEvent.Count-oldCount, oldEvent, newEvent)
 	}
-	glog.Infof("OnUpdate %v", newEvent)
+	glog.V(7).Infof("OnUpdate %v", newEvent)
 
 	ReceivedEntryCount.WithLabelValues(newEvent.Source.Component).Inc()
 
@@ -159,21 +159,20 @@ func (es *ElasticSearchSink) sendEntries(entries []*api_v1.Event) {
 	bulkRequest := es.esClient.Bulk()
 
 	for _, event := range entries {
-		glog.Infof("Orig obj: %v", event.InvolvedObject)
-		newIndex := elastic.NewBulkIndexRequest().Index(indexName).Type(eventsLogName).Id(string(event.ObjectMeta.UID)).Doc(event)
+		glog.V(7).Infof("Orig obj: %+v", event)
+		newIndex := elastic.NewBulkIndexRequest().Index(indexName).Type(eventsLogName).Id(string(event.ObjectMeta.UID)).Type("").Doc(event)
 		bulkRequest = bulkRequest.Add(newIndex)
 	}
 
 	_, err := bulkRequest.Do(es.ctx)
 	if err != nil {
 		glog.Errorf("save events error: %v", err)
+	} else {
+		SuccessfullySentEntryCount.Add(float64(len(entries)))
+		glog.V(4).Infof("Successfully sent %d entries to Elasticsearch", len(entries))
 	}
-
-	SuccessfullySentEntryCount.Add(float64(len(entries)))
-
 	<-es.concurrencyChannel
 
-	glog.V(4).Infof("Successfully sent %d entries to Elasticsearch", len(entries))
 }
 
 func (es *ElasticSearchSink) setTimer() {
