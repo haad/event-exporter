@@ -61,7 +61,7 @@ var (
 func newSystemStopChannel() chan struct{} {
 	ch := make(chan struct{})
 	go func() {
-		c := make(chan os.Signal)
+		c := make(chan os.Signal, 10)
 		signal.Notify(c, syscall.SIGINT, syscall.SIGTERM)
 		sig := <-c
 		glog.Infof("Recieved signal %s, terminating", sig.String())

@@ -1,4 +1,4 @@
-FROM golang:1.10.4-alpine3.7 as builder
+FROM 1.20.6-alpine3.18 as builder
 
 COPY . /go/src/github.com/haad/event-exporter
 WORKDIR /go/src/github.com/haad/event-exporter
@@ -9,7 +9,7 @@ RUN go get -u github.com/golang/dep/cmd/dep && \
     dep ensure && \
     make build
 
-FROM alpine:3.7
+FROM alpine:3.18
 COPY --from=builder /go/src/github.com/haad/event-exporter/bin/event-exporter /usr/bin/event-exporter
 
 ENTRYPOINT ["/usr/bin/event-exporter"]
