@@ -1,6 +1,7 @@
 package watchers
 
 import (
+	"context"
 	"time"
 
 	"github.com/golang/glog"
@@ -57,9 +58,9 @@ type EventWatcherConfig struct {
 func NewEventWatcher(client kubernetes.Interface, config *EventWatcherConfig) Watcher {
 	listerWatcher := &cache.ListWatch{
 		ListFunc: func(options meta_v1.ListOptions) (runtime.Object, error) {
-			glog.Infof("ListFunc %v", options)
-			list, err := client.CoreV1().Events(meta_v1.NamespaceAll).List(options)
-			glog.Infof("got list %v", list)
+			glog.V(7).Infof("ListFunc %v", options)
+			list, err := client.CoreV1().Events(meta_v1.NamespaceAll).List(context.TODO(), options)
+			glog.V(7).Infof("got list %v", list)
 			if err == nil {
 				config.OnList(list)
 			}
@@ -67,7 +68,7 @@ func NewEventWatcher(client kubernetes.Interface, config *EventWatcherConfig) Wa
 		},
 		WatchFunc: func(options meta_v1.ListOptions) (watch.Interface, error) {
 			glog.Infof("WatchFunc %v", options)
-			return client.CoreV1().Events(meta_v1.NamespaceAll).Watch(options)
+			return client.CoreV1().Events(meta_v1.NamespaceAll).Watch(context.TODO(), options)
 		},
 	}
 

@@ -46,8 +46,6 @@ func (e *eventExporter) Run(stopCh <-chan struct{}) {
 		e.watcher.Run(stopCh)
 	}()
 
-	<-stopCh
-
 	wg.Wait()
 }
 

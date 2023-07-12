@@ -35,7 +35,7 @@ func (s *watcherStore) Add(obj interface{}) error {
 	if err := s.Store.Add(obj); err != nil {
 		return err
 	}
-	s.handler.OnAdd(obj)
+	s.handler.OnAdd(obj, false)
 	return nil
 }
 

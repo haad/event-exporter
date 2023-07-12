@@ -12,7 +12,7 @@ vet:
 	go vet ${UNITTEST_PACKAGES}
 
 build:
-	go build -ldflags -s -v -o bin/event-exporter .
+	go build -buildvcs=false -ldflags -s -v -o bin/event-exporter .
 
 run: build
 	bin/event-exporter

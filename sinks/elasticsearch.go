@@ -18,7 +18,6 @@ package sinks
 
 import (
 	"context"
-	"fmt"
 	"time"
 
 	"github.com/golang/glog"
@@ -85,9 +84,9 @@ func NewElasticSearchSink(config *ElasticSearchConf) (*ElasticSearchSink, error)
 	}, nil
 }
 
-func (es *ElasticSearchSink) OnAdd(event *api_v1.Event) {
+func (es *ElasticSearchSink) OnAdd(event *api_v1.Event, inList bool) {
 	ReceivedEntryCount.WithLabelValues(event.Source.Component).Inc()
-	glog.Infof("OnAdd %v", event)
+	glog.V(7).Infof("OnAdd %v", event)
 	es.logEntryChannel <- event
 }
 
@@ -119,7 +118,7 @@ func (es *ElasticSearchSink) OnDelete(*api_v1.Event) {
 
 func (es *ElasticSearchSink) OnList(list *api_v1.EventList) {
 	// Nothing to do else
-	glog.Infof("OnList %v", list)
+	glog.V(7).Infof("OnList %v", list)
 	if es.beforeFirstList {
 		es.beforeFirstList = false
 	}
@@ -136,10 +135,8 @@ func (es *ElasticSearchSink) Run(stopCh <-chan struct{}) {
 			} else if len(es.currentBuffer) == 1 {
 				es.setTimer()
 			}
-			break
 		case <-es.getTimerChannel():
 			es.flushBuffer()
-			break
 		case <-stopCh:
 			glog.Info("Elasticsearch sink recieved stop signal, waiting for all requests to finish")
 			glog.Info("All requests to Elasticsearch finished, exiting Elasticsearch sink")
@@ -155,7 +152,7 @@ func (es *ElasticSearchSink) flushBuffer() {
 	go es.sendEntries(entries)
 }
 func (es *ElasticSearchSink) sendEntries(entries []*api_v1.Event) {
-	indexName := fmt.Sprintf("%s", es.config.IndexPrefix)
+	indexName := es.config.IndexPrefix
 
 	glog.V(4).Infof("Sending %d entries to Elasticsearch(%s)", len(entries), indexName)
 
