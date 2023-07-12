@@ -30,7 +30,7 @@ import (
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 
 	"k8s.io/client-go/kubernetes"
-	"k8s.io/client-go/rest"
+	"k8s.io/client-go/tools/clientcmd"
 
 	"github.com/haad/event-exporter/sinks"
 	// "event-exporter/sinks"
@@ -61,24 +61,28 @@ var (
 func newSystemStopChannel() chan struct{} {
 	ch := make(chan struct{})
 	go func() {
-		c := make(chan os.Signal, 10)
+		c := make(chan os.Signal)
 		signal.Notify(c, syscall.SIGINT, syscall.SIGTERM)
 		sig := <-c
 		glog.Infof("Recieved signal %s, terminating", sig.String())
-
-		ch <- struct{}{}
+		for i := 0; i < 10; i++ {
+			ch <- struct{}{}
+		}
 	}()
 
 	return ch
 }
 
 func newKubernetesClient() (kubernetes.Interface, error) {
-	config, err := rest.InClusterConfig()
+	// if KUBECONFIG not provided will fall to incluster config
+	k8sconf, err := clientcmd.BuildConfigFromFlags("", os.Getenv("KUBECONFIG"))
 	if err != nil {
-		return nil, fmt.Errorf("failed to create in-cluster config: %v", err)
+		return nil, err
 	}
+	k8sconf.UserAgent = "event-exporter"
+	glog.Infof("Creating API client for %s", k8sconf.Host)
 
-	return kubernetes.NewForConfig(config)
+	return kubernetes.NewForConfig(k8sconf)
 }
 
 func main() {

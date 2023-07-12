@@ -25,7 +25,7 @@ import (
 )
 
 type EventHandler interface {
-	OnAdd(*api_v1.Event)
+	OnAdd(*api_v1.Event, bool)
 	OnUpdate(*api_v1.Event, *api_v1.Event)
 	OnDelete(*api_v1.Event)
 }
@@ -40,9 +40,9 @@ func NewEventHandlerWrapper(handler EventHandler) *eventHandlerWrapper {
 	}
 }
 
-func (c *eventHandlerWrapper) OnAdd(obj interface{}) {
+func (c *eventHandlerWrapper) OnAdd(obj interface{}, inList bool) {
 	if event, ok := c.convert(obj); ok {
-		c.handler.OnAdd(event)
+		c.handler.OnAdd(event, false)
 	}
 }
 
